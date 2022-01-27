@@ -2,6 +2,10 @@ import { ChevronDownIcon } from "@heroicons/react/outline";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { shuffle } from "lodash";
+import { useRecoilValue, useRecoilState } from "recoil";
+import { playlistIdState, playlistState } from "../atoms/playlistAtom";
+import useSporify from "../hooks/useSporify";
+import Songs from '../components/Songs'
 
 const colors = [
   "from-indigo-500",
@@ -14,17 +18,29 @@ const colors = [
 ];
 
 function Center() {
+  const spotifyApi = useSporify();
   const { data: session } = useSession();
   const [color, setColor] = useState(null);
+  const playlistsId = useRecoilValue(playlistIdState);
+  const [playlist, setPlaylist] = useRecoilState(playlistState);
 
   useEffect(() => {
     setColor(shuffle(colors).pop());
-  }, []);
+  }, [playlistsId]);
+
+  useEffect(() => {
+    spotifyApi
+      .getPlaylist(playlistsId)
+      .then((data) => {
+        setPlaylist(data.body);
+      })
+      .catch((error) => console.log("something when wrong", error));
+  }, [spotifyApi, playlistsId]);
 
   return (
     <div className="flex-grow">
       <header className="absolute top-5 right-8">
-        <div className="flex items-center bg-black space-x-3 opacity-90 hover:opacity-80 cursor-pointer rounded-full p-1 pr-2">
+        <div className="flex items-center bg-black text-white space-x-3 opacity-90 hover:opacity-80 cursor-pointer rounded-full p-1 pr-2">
           <img
             className="rounded-full w-10 h-10"
             src={session?.user.image}
@@ -35,10 +51,17 @@ function Center() {
         </div>
       </header>
       <section
-        className={`flex items-end space-x-7 bg-gradient-to-b to-black ${color} text-white padding-8 h-80`}
+        className={`flex items-end space-x-7 bg-gradient-to-b to-black ${color} text-white p-8 h-80`}
       >
-        <h1>hello</h1>
+        <img className="h-44 w-44 shadow-2xl" src={playlist?.images?.[0]?.url} alt=""></img>
+        <div>
+          <p>PLAYLIST</p>
+          <h1 className="text-2xl md:text-3xl xl:text-5xl">
+            {playlist?.name}
+          </h1>
+        </div>
       </section>
+      <Songs/>
     </div>
   );
 }
