@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import Sidebar from '../components/Sidebar'
 import Center from '../components/Center'
+import Player from '../components/Player'
 import { GetSessionParams, SessionProvider } from 'next-auth/react';
 import {getSession} from 'next-auth/react'
 
@@ -11,7 +12,10 @@ export default function Home() {
         <Sidebar/>
         <Center />
       </main>
-      {/* <div>{player}</div> */}
+
+      <div className="sticky bottom-0">
+        <Player/>
+      </div>
     </div>
   )
 }
